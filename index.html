@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slide Puzzle Game</title>
+ 
+
+
+<style>
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f0f0f0;
+    margin: 0;
+    font-family: 'Comic Sans MS', cursive, sans-serif;
+    background: linear-gradient(to right, #ffecd2 0%, #fcb69f 100%);
+}
+
+.menu-container {
+    text-align: center;
+    padding: 20px;
+    border: 3px solid #ffcccb;
+    border-radius: 15px;
+    background-color: #fff0f5;
+    box-shadow: 0px 0px 15px 5px rgba(255, 192, 203, 0.6);
+}
+
+.menu-container h1 {
+    margin-bottom: 10px;
+    font-size: 36px;
+    color: #ff6f61;
+}
+
+.menu-container p {
+    margin-bottom: 20px;
+    font-size: 18px;
+    color: #ff6f61;
+}
+
+.menu button {
+    display: inline-block;
+    margin: 10px;
+    padding: 15px 25px;
+    font-size: 18px;
+    color: #ffffff;
+    background-color: #ff6f61;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.menu button:hover {
+    background-color: #ff9a8b;
+}
+
+.game-container {
+    display: none;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+}
+</style>
+</head>
+<body>
+    <div class="menu-container">
+        <h1>Slide Puzzle Game</h1>
+        <p>Select your difficulty level:</p>
+        <div class="menu">
+            <button onclick="location.href='page1easy.html'">Easy (3x3)</button>
+            <button onclick="location.href='page1medium.html'">Medium (4x4)</button>
+            <button onclick="location.href='page1hard.html'">Hard (5x5)</button>
+        </div>
+    </div>
+    <div class="game-container" id="game-container"></div>
+    <script src="script.js"></script>
+</body>
+</html>

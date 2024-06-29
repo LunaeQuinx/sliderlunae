@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Easy Puzzle (3x3)</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Add any additional styling here */
+        .guide-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .guide-container img {
+            max-width: 100%;
+            max-height: 200px;
+            border: 2px solid #333;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container" id="game-container">
+        <div class="timer" id="timer">Timer: 00:00</div>
+        <div class="guide-container" id="guide-container">
+            <h3>elephant</h3>
+            <img id="guide-image" src="cow.jpg" alt="Cow Image">
+        </div>
+        <div class="puzzle-container" id="puzzle-container"></div>
+        <button id="nextButton" onclick="nextQuestion()" style="display:none;">Next Question</button>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            startGame('medium');
+        });
+
+        let startTime;
+        let timerInterval;
+        let puzzleSolved = false;
+        let timerSeconds = 300; // Initial timer value in seconds
+
+        function startGame(difficulty) {
+            const puzzleContainer = document.getElementById('puzzle-container');
+            puzzleContainer.innerHTML = ''; // Clear any previous game
+
+            let size;
+            switch(difficulty) {
+                case 'easy':
+                    size = 3; // Change size to 3 for a 3x3 puzzle
+                    break;
+                case 'medium':
+                    size = 4;
+                    break;
+                case 'hard':
+                    size = 5;
+                    break;
+            }
+
+            const tiles = generateSolvableTiles(size);
+            render(tiles, size, puzzleContainer);
+            startTimer();
+        }
+
+        function generateSolvableTiles(size) {
+            let tiles = [];
+            for (let i = 0; i < size * size - 1; i++) {
+                tiles.push(i);
+            }
+            tiles.push("");
+            
+            do {
+                shuffle(tiles);
+            } while (!isSolvable(tiles, size) || isSolved(tiles));
+
+            return tiles;
+        }
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function isSolvable(tiles, size) {
+            let inversions = 0;
+            for (let i = 0; i < tiles.length - 1; i++) {
+                for (let j = i + 1; j < tiles.length; j++) {
+                    if (tiles[i] !== "" && tiles[j] !== "" && tiles[i] > tiles[j]) {
+                        inversions++;
+                    }
+                }
+            }
+
+            if (size % 2 === 1) {
+                return inversions % 2 === 0;
+            } else {
+                const blankRowFromBottom = size - Math.floor(tiles.indexOf("") / size);
+                if (blankRowFromBottom % 2 === 0) {
+                    return inversions % 2 === 1;
+                } else {
+                    return inversions % 2 === 0;
+                }
+            }
+        }
+
+        function isSolved(tiles) {
+            for (let i = 0; i < tiles.length - 1; i++) {
+                if (tiles[i] !== i) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function render(tiles, size, container) {
+            container.innerHTML = '';
+            tiles.forEach((tile, index) => {
+                const tileElement = document.createElement('div');
+                tileElement.className = 'puzzle-tile';
+                if (tile === "") {
+                    tileElement.classList.add('empty');
+                } else {
+                    tileElement.style.backgroundImage = `url('elephant/${tile + 1}.jpg')`;
+                    tileElement.addEventListener('click', () => moveTile(index, size, tiles, container));
+                }
+                container.appendChild(tileElement);
+            });
+            container.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+
+            // Update guide image
+            const guideImage = document.getElementById('guide-image');
+            guideImage.src = `elephant.jpg`; // Replace with the actual path to the cow image
+
+            // Check if puzzle is already solved
+            puzzleSolved = isSolved(tiles);
+            updateNextButtonVisibility();
+        }
+
+        function moveTile(index, size, tiles, container) {
+            const emptyIndex = tiles.indexOf("");
+            const [emptyRow, emptyCol] = [Math.floor(emptyIndex / size), emptyIndex % size];
+            const [tileRow, tileCol] = [Math.floor(index / size), index % size];
+
+            if (
+                (Math.abs(emptyRow - tileRow) === 1 && emptyCol === tileCol) ||
+                (Math.abs(emptyCol - tileCol) === 1 && emptyRow === tileRow)
+            ) {
+                [tiles[emptyIndex], tiles[index]] = [tiles[index], tiles[emptyIndex]];
+                render(tiles, size, container);
+                checkWin(tiles, size);
+            }
+        }
+
+        function checkWin(tiles, size) {
+            if (isSolved(tiles)) {
+                puzzleSolved = true;
+                clearInterval(timerInterval);
+                updateNextButtonVisibility();
+                alert("You win!");
+            }
+        }
+
+        function startTimer() {
+            startTime = Date.now();
+            updateTimer(); // Update timer immediately
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function updateTimer() {
+            const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+            const remainingTime = timerSeconds - elapsedTime;
+            if (remainingTime <= 0) {
+                clearInterval(timerInterval);
+                puzzleSolved = true;
+                updateNextButtonVisibility();
+                alert("Time's up! Puzzle not completed.");
+            }
+            const minutes = Math.floor(remainingTime / 60);
+            const seconds = remainingTime % 60;
+            document.getElementById('timer').textContent = `Timer: ${formatTime(minutes)}:${formatTime(seconds)}`;
+        }
+
+        function formatTime(time) {
+            return time < 10 ? `0${time}` : time;
+        }
+
+        function updateNextButtonVisibility() {
+            const nextButton = document.getElementById('nextButton');
+            if (puzzleSolved || timerSeconds <= 0) {
+                nextButton.style.display = 'block';
+            } else {
+                nextButton.style.display = 'none';
+            }
+        }
+
+        function nextQuestion() {
+            // Replace 'nextPage.html' with the actual URL of the next question or puzzle page
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
